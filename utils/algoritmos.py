@@ -62,6 +62,84 @@ def secante(a, b, f, TOL=1e-8):
     return x
 
 
+def newton_coef(x, y):
+    """Coeficientes do polinômio interpolador de Newton."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    n = len(x)
+    a = y.copy()
+    for j in range(1, n):
+        a[j:n] = (a[j:n] - a[j - 1 : n - 1]) / (x[j:n] - x[: n - j])
+    return a
+
+
+def newton(x, y):
+    """Polinômio interpolador de Newton em forma de coeficientes do NumPy."""
+    a = newton_coef(x, y)
+    p = np.array([a[-1]], dtype=float)
+    for k in range(len(a) - 2, -1, -1):
+        p = np.convolve(p, np.array([1.0, -x[k]], dtype=float))
+        if len(p) > 0:
+            p[-1] += a[k]
+    return p
+
+
+def lagrange_add(p, q):
+    """Adiciona dois polinômios em coeficientes de ordem decrescente."""
+    if len(q) > len(p):
+        p, q = q, p
+    off = len(p) - len(q)
+    res = p[:]
+    for i in range(len(q)):
+        res[off + i] += q[i]
+    return res
+
+
+def lagrange_mul(p, q):
+    """Multiplica dois polinômios em coeficientes de ordem decrescente."""
+    deg = (len(p) - 1) + (len(q) - 1)
+    res = [0.0] * (deg + 1)
+    for i, a in enumerate(p):
+        for j, b in enumerate(q):
+            res[i + j] += a * b
+    return res
+
+
+def lagrange_scale(p, s):
+    """Escala os coeficientes de um polinômio."""
+    return [s * c for c in p]
+
+
+def lagrange(x, y):
+    """Polinômio interpolador de Lagrange em coeficientes do NumPy."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    n = len(x)
+    p = [0.0]
+    for i in range(n):
+        m = [1.0]
+        d = 1.0
+        xi = x[i]
+        for j in range(n):
+            if j == i:
+                continue
+            m = lagrange_mul(m, [1.0, -x[j]])
+            d *= xi - x[j]
+        pi = lagrange_scale(m, y[i] / d)
+        p = lagrange_add(p, pi)
+    return np.asarray(p, dtype=float)
+
+
+def polinomial(x, y):
+    """Polinômio interpolador obtido pela solução do sistema Vandermonde."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    n = len(x)
+    V = np.vander(x, N=n, increasing=False)
+    a = np.linalg.solve(V, y)
+    return a
+
+
 def lu_pivot(A: np.ndarray):
     """Fatoração LU com pivoteamento parcial."""
     A = A.astype(float).copy()
@@ -203,6 +281,13 @@ __all__ = [
     "pontofixo",
     "newton_raphson",
     "secante",
+    "newton_coef",
+    "newton",
+    "lagrange_add",
+    "lagrange_mul",
+    "lagrange_scale",
+    "lagrange",
+    "polinomial",
     "lu_pivot",
     "lb",
     "uy",
