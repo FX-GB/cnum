@@ -311,6 +311,64 @@ def dc(f, x, h):
     return (f(x + h) - f(x - h)) / (2 * h)
 
 
+def medio(f, a, b):
+    """Regra simples do ponto médio."""
+    h = b - a
+    return h * f((a + b) / 2)
+
+
+def trapezio(f, a, b):
+    """Regra simples do trapézio."""
+    h = b - a
+    return h * (f(a) + f(b)) / 2
+
+
+def simpson(f, a, b):
+    """Regra simples de Simpson."""
+    h = (b - a) / 2
+    return h * (f(a) + 4 * f((a + b) / 2) + f(b)) / 3
+
+
+def integral(metodo, f, a, b, n=1e-3):
+    """Integra por uma quadratura composta.
+
+    Se n < 1, ele é usado como tamanho de passo. Se n >= 1, ele é usado
+    como o número de subintervalos.
+    """
+    if n <= 0:
+        raise ValueError("n deve ser positivo.")
+
+    if n < 1:
+        c = a
+        s = 0.0
+        while c < b:
+            d = min(c + n, b)
+            s += metodo(f, c, d)
+            c = d
+        return s
+
+    pontos = int(round(n)) + 1
+    x = np.linspace(a, b, pontos)
+    h = (b - a) / int(round(n))
+
+    if metodo is medio:
+        pontos_medios = (x[:-1] + x[1:]) / 2
+        return h * sum(f(xi) for xi in pontos_medios)
+    if metodo is trapezio:
+        return h * (0.5 * f(a) + sum(f(xi) for xi in x[1:-1]) + 0.5 * f(b))
+    if metodo is simpson:
+        subintervalos = int(round(n))
+        if subintervalos % 2 != 0:
+            raise ValueError("Simpson composto requer um número par de subintervalos.")
+        return h / 3 * (
+            f(a)
+            + f(b)
+            + 4 * sum(f(xi) for xi in x[1:-1:2])
+            + 2 * sum(f(xi) for xi in x[2:-1:2])
+        )
+    raise ValueError("Método de integração não suportado.")
+
+
 __all__ = [
     "bissecao",
     "pontofixo",
@@ -336,4 +394,8 @@ __all__ = [
     "dp",
     "dr",
     "dc",
+    "medio",
+    "trapezio",
+    "simpson",
+    "integral",
 ]
