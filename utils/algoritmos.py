@@ -290,6 +290,27 @@ def fixed_point(a, g, TOL=1e-8, iter=1000):
     return x
 
 
+def dp(f, x, h):
+    """Diferença finita progressiva de primeira ordem."""
+    if h == 0:
+        raise ValueError("h deve ser diferente de zero.")
+    return (f(x + h) - f(x)) / h
+
+
+def dr(f, x, h):
+    """Diferença finita regressiva de primeira ordem."""
+    if h == 0:
+        raise ValueError("h deve ser diferente de zero.")
+    return (f(x) - f(x - h)) / h
+
+
+def dc(f, x, h):
+    """Diferença finita central de segunda ordem."""
+    if h == 0:
+        raise ValueError("h deve ser diferente de zero.")
+    return (f(x + h) - f(x - h)) / (2 * h)
+
+
 __all__ = [
     "bissecao",
     "pontofixo",
@@ -312,4 +333,7 @@ __all__ = [
     "G",
     "GN",
     "fixed_point",
+    "dp",
+    "dr",
+    "dc",
 ]
