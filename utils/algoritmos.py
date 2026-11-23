@@ -140,6 +140,20 @@ def polinomial(x, y):
     return a
 
 
+def regressao(x, y, v):
+    """Ajusta uma combinação linear de funções pelo método dos mínimos quadrados."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    V = np.asarray(v(x), dtype=float)
+
+    if V.ndim != 2 or V.shape[0] != len(y):
+        raise ValueError("A matriz de funções deve ter uma linha para cada valor de y.")
+    if y.ndim != 1:
+        raise ValueError("y deve ser um vetor unidimensional.")
+
+    return np.linalg.lstsq(V, y, rcond=None)[0]
+
+
 def lu_pivot(A: np.ndarray):
     """Fatoração LU com pivoteamento parcial."""
     A = A.astype(float).copy()
